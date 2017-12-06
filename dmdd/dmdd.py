@@ -30,8 +30,8 @@ except ImportError:
   logging.warning('pymultinest not imported!')
 
 if not on_rtd:
-    from constants import *
-    from globals import *
+    from dmdd.constants import *
+    from dmdd.globals import *
 
 try:
     MAIN_PATH = os.environ['DMDD_MAIN_PATH']
@@ -205,7 +205,7 @@ class MultinestRun(object):
         for k in self.sim_model.fixed_params:
             all_params[k] = self.sim_model.fixed_params[k]
             
-        all_param_names = self.sim_model.param_names + self.sim_model.fixed_params.keys()
+        all_param_names = self.sim_model.param_names + list(self.sim_model.fixed_params.keys())
         inds = np.argsort(all_param_names)        
         sorted_param_names = np.array(all_param_names)[inds]
         sorted_param_values = [all_params[par] for par in sorted_param_names]
@@ -223,7 +223,7 @@ class MultinestRun(object):
         if len(self.fit_model.fixed_params) > 0:
             self.foldername += '_fixed'
 
-            keys = self.fit_model.fixed_params.keys()
+            keys = list(self.fit_model.fixed_params.keys())
             inds = np.argsort(keys)
             sorted_fixedparam_names = np.array(keys)[inds]
             sorted_fixedparam_values = [self.fit_model.fixed_params[par] for par in sorted_fixedparam_names]
@@ -273,15 +273,15 @@ class MultinestRun(object):
         """
         res = 0
         fit_paramvals = {}
-        for i in xrange(ndim):
+        for i in range(ndim):
             par = self.fit_model.param_names[i]
             fit_paramvals[par] = cube[i]
     
         for sim in self.simulations:
             kwargs = self.fit_model.default_rate_parameters.copy()
-            for kw,val in fit_paramvals.iteritems():
+            for kw,val in fit_paramvals.items():
                 kwargs[kw] = val
-            for kw,val in sim.experiment.parameters.iteritems():
+            for kw,val in sim.experiment.parameters.items():
                 kwargs[kw] = val
             kwargs['energy_resolution'] = sim.experiment.energy_resolution
             
@@ -301,7 +301,7 @@ class MultinestRun(object):
         
         """
         params = self.fit_model.param_names
-        for i in xrange(ndim):
+        for i in range(ndim):
             # if the i-th param is fnfp, then the range
             # might go to negative values, must force flat prior:
             if params[i] in FNFP_PARAM_NAMES:
@@ -323,7 +323,7 @@ class MultinestRun(object):
         
         """
         params = self.fit_model.param_names
-        for i in xrange(ndim):
+        for i in range(ndim):
             cube_min,cube_max = self.prior_ranges[params[i]]
             cube[i] = cube[i] * (cube_max - cube_min) + cube_min
 
@@ -335,8 +335,8 @@ class MultinestRun(object):
         filename = self.chainspath + self.mn_params['outputfiles_basename'] + 'stats.dat'
         try:
             fev = open(filename,'r')
-        except IOError,e:
-            print e
+        except IOError as e:
+            print(e)
             return 0
     
         line = fev.readline()
@@ -393,7 +393,7 @@ class MultinestRun(object):
     
         if (not os.path.exists(chains_file)) or (not os.path.exists(pickle_file)) or (not os.path.exists(stats_file)):
             force_run = True
-            print 'Chains, pickle, or stats file(s) not found. Forcing run.\n\n'
+            print('Chains, pickle, or stats file(s) not found. Forcing run.\n\n')
         else:
             fin = open(pickle_file,'rb')
             pickle_old = pickle.load(fin)
@@ -401,7 +401,7 @@ class MultinestRun(object):
             try:
                 if not compare_dictionaries(pickle_old, pickle_content):
                     force_run = True
-                    print 'Run pickle file not a match. Forcing run.\n\n'
+                    print('Run pickle file not a match. Forcing run.\n\n')
             except:
                 raise
                           
@@ -439,7 +439,7 @@ class MultinestRun(object):
 
         end = time.time()
         if not self.silent:
-            print '\n Fit took {:.12f} minutes.\n'.format((end - start) / 60.)
+            print('\n Fit took {:.12f} minutes.\n'.format((end - start) / 60.))
         
     def visualize(self, **kwargs):
         """
@@ -453,11 +453,11 @@ class MultinestRun(object):
         """
 
         #make theory, data, and fit plots for each experiment:
-        import dmdd_plot as dp
+        import dmdd.dmdd_plot as dp
         fitmodel_dRdQ_params = self.fit_model.default_rate_parameters
         param_values = self.global_bestfit()
         if len(self.fit_model.fixed_params) > 0:
-            for k,v in self.fit_model.fixed_params.iteritems():
+            for k,v in self.fit_model.fixed_params.items():
                 fitmodel_dRdQ_params[k] = v 
         for i,k in enumerate(self.fit_model.param_names): 
             fitmodel_dRdQ_params[k] = param_values[i]
@@ -628,7 +628,7 @@ class Simulation(object):
             dRdQ_params[par] = self.param_values[i]
             allpars[par] = self.param_values[i]
         
-        for kw,val in experiment.parameters.iteritems(): #add experiment parameters
+        for kw,val in experiment.parameters.items(): #add experiment parameters
             allpars[kw] = val
         dRdQ_params['element'] = experiment.element
         self.dRdQ_params = dRdQ_params
@@ -667,7 +667,7 @@ class Simulation(object):
                 force_sim = True
                 
         else:
-            print 'Simulation data and/or pickle file does not exist. Forcing simulation.\n\n'
+            print('Simulation data and/or pickle file does not exist. Forcing simulation.\n\n')
             force_sim = True
       
         if force_sim:
@@ -699,7 +699,7 @@ class Simulation(object):
             self.plot_data(plot_nbins=plot_nbins, plot_theory=plot_theory, save_plot=True)
         else:
             if not self.silent:
-                print "simulation had %i events (expected %.0f)." % (self.N,self.model_N)
+                print("simulation had %i events (expected %.0f)." % (self.N,self.model_N))
     
         
     def simulate_data(self):
@@ -726,7 +726,7 @@ class Simulation(object):
             Nexpected = 0
 
         if not self.silent:
-            print "simulated: %i events (expected %.0f)." % (Nevents,Nexpected)
+            print("simulated: %i events (expected %.0f)." % (Nevents,Nexpected))
         return Q
 	    
     def plot_data(self, plot_nbins=20, plot_theory=True, save_plot=True,
@@ -1150,8 +1150,8 @@ def compare_dictionaries(d1,d2,debug=False,rtol=1e-5):
     """
     if not set(d1.keys())==set(d2.keys()):
         if debug:
-            print 'keys not equal.'
-            print d1.keys(),d2.keys()
+            print('keys not equal.')
+            print(d1.keys(),d2.keys())
         return False
     for k in d1.keys():
         if type(d1[k]) != type(d2[k]):
@@ -1159,13 +1159,13 @@ def compare_dictionaries(d1,d2,debug=False,rtol=1e-5):
         elif type(d1[k])==dict:
             if not compare_dictionaries(d1[k],d2[k],rtol=rtol):
                 if debug:
-                    print 'dictionaries not equal for {}.'.format(k)
+                    print('dictionaries not equal for {}.'.format(k))
                 return False
         elif type(d1[k])==type(np.array([1,2])):
             if not np.all(d1[k]==d2[k]):
                 if debug:
-                    print 'arrays for {} not equal:'.format(k)
-                    print d1[k], d2[k]
+                    print('arrays for {} not equal:'.format(k))
+                    print(d1[k], d2[k])
                 return False
 
         #make sure floats are close in value, down to rtol relative precision:

@@ -9,9 +9,9 @@ import dmdd_efficiencies as eff
 def check_min_mass(element='fluorine', Qmin=1., v_esc=544., v_lag=220., mx_guess=1.):
     experiment = dmdd.Experiment('test',element,Qmin, 40.,100., eff.efficiency_unit)
     res = experiment.find_min_mass(v_esc=v_esc, v_lag=v_lag, mx_guess=mx_guess)
-    print res,'GeV'
+    print(res,'GeV')
     if res<0:
-        print 'Problem: try another mx_guess...'
+        print('Problem: try another mx_guess...')
     
     
 

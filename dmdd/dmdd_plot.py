@@ -19,7 +19,7 @@ rc('text', usetex=True)
 
 
 import dmdd_efficiencies as eff
-import constants as const
+import dmdd.constants as const
 import rate_UV 
 
 mpl.rcParams['xtick.major.size']=8
@@ -87,10 +87,10 @@ def plot_2d_posterior(x, y,xlabel='', ylabel='',
         posterior_norm = grid_posterior.sum()
         for j in np.arange(len(percentage_integral)):
             for i in epsilon_marks:
-                posterior_integral = grid_posterior[np.where(grid_posterior>posterior_marks[i])].sum()/posterior_norm
+                posterior_integral = grid_posterior[np.where(grid_posterior>posterior_marks[int(i)])].sum()/posterior_norm
                 if posterior_integral > percentage_integral[j]:
                     break
-            contours[j] = posterior_marks[i]
+            contours[j] = posterior_marks[int(i)]
         contours[-1]=grid_posterior.max()
         pl.contour(par_x, par_y, grid_posterior, contours, linewidths=contour_lw,colors='k',zorder=3)
         pl.contourf(par_x, par_y, grid_posterior, contours,colors=contour_colors,alpha=alpha,zorder=2)
@@ -110,8 +110,8 @@ def plot_2d_posterior(x, y,xlabel='', ylabel='',
 def ln_evidence(filename='/data/verag/dmdd_2014/chains_uv/sim1_Xe_mass_10.00_sigma_si_7862.18_fitfor_mass_sigma_si_logflat_nlive2000/1-stats.dat'):
     try:
         fev = open(filename,'r')
-    except IOError,e:
-        print e
+    except IOError as e:
+        print(e)
         return 0
 
     line = fev.readline()
